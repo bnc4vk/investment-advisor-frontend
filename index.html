@@ -10,23 +10,21 @@
     <header class="hero">
       <div class="hero__content">
         <p class="hero__eyebrow">Investment Advisor</p>
-        <h1>ETF Portfolio Monitor</h1>
+        <h1>ETF Portfolio Dashboard</h1>
         <p class="hero__subtitle">
-          Track a $100K portfolio, review end-of-day sell-off signals, and queue
-          next-day trades from your ML workflow.
+          Track the starting $100K portfolio performance, review portfolio investments, and follow along for next-day trade decisions queued up after close.
         </p>
         <div class="hero__actions">
           <button class="button button--primary" id="refresh-decisions">
             Fetch end-of-day decisions
           </button>
-          <button class="button" id="simulate-day">Simulate trading day</button>
         </div>
         <p class="hero__note" id="last-updated">Last updated: --</p>
       </div>
       <div class="hero__card">
         <p class="card__label">Portfolio balance</p>
         <h2 id="portfolio-balance">$100,000.00</h2>
-        <p class="card__change" id="portfolio-change">+0.00% today</p>
+        <p class="card__change" id="portfolio-change">+0.00% since Jan 19th, 2025</p>
         <div class="card__summary">
           <div>
             <p class="card__metric">Holdings</p>
@@ -46,8 +44,7 @@
           <div>
             <h3>Next-day trade decisions</h3>
             <p class="panel__subtitle">
-              Generated after market close from the sell-off detection + ML
-              prediction workflow.
+              Generated after market close for substantial sell-offs using a proprietary ETF trading strategy.
             </p>
           </div>
           <span class="badge" id="decision-status">Awaiting fetch</span>
@@ -74,14 +71,9 @@
                 <code id="api-endpoint">/api/decisions</code>
               </p>
               <p class="panel__note" id="decision-message">
-                Fetch decisions after market close (4:00pm ET) to queue trades
-                for the next session.
+                Fetch decisions after market close (4:00pm ET) to queue trades for the next session.
               </p>
             </div>
-            <div class="panel__cta">
-              <button class="button button--ghost" id="copy-endpoint">
-                Copy endpoint
-              </button>
             </div>
           </div>
         </div>
@@ -105,11 +97,8 @@
               href="https://github.com/YOUR-GITHUB-HANDLE"
               target="_blank"
               rel="noreferrer"
-              >github.com/YOUR-GITHUB-HANDLE</a
+              >github.com/bnc4vk</a
             >
-            <p class="contact-card__note">
-              Replace the placeholder with your public repository URL.
-            </p>
           </div>
         </div>
       </section>

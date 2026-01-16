@@ -1,6 +1,3 @@
-const apiBase = "https://your-render-service.onrender.com";
-const decisionsEndpoint = `${apiBase}/api/decisions`;
-
 const portfolioState = {
   startingBalance: 100000,
   cashBalance: 100000,
@@ -20,14 +17,11 @@ const elements = {
   sellList: document.getElementById("sell-list"),
   buyList: document.getElementById("buy-list"),
   decisionMessage: document.getElementById("decision-message"),
-  apiEndpoint: document.getElementById("api-endpoint"),
 };
 
 const refreshButton = document.getElementById("refresh-decisions");
 const simulateButton = document.getElementById("simulate-day");
-const copyButton = document.getElementById("copy-endpoint");
 
-elements.apiEndpoint.textContent = decisionsEndpoint;
 
 const formatCurrency = (value) =>
   value.toLocaleString("en-US", {
@@ -89,30 +83,13 @@ const updateDecisionStatus = (status, message) => {
   elements.decisionMessage.textContent = message;
 };
 
-const fetchDecisions = async () => {
-  updateDecisionStatus("Fetching...", "Reaching out to the ML API.");
-
-  try {
-    const response = await fetch(decisionsEndpoint);
-    if (!response.ok) {
-      throw new Error(`API returned ${response.status}`);
-    }
-    const data = await response.json();
-
-    renderDecisions(data);
-    portfolioState.holdings = data.updated_holdings ?? portfolioState.holdings;
-    portfolioState.cashBalance = data.cash_balance ?? portfolioState.cashBalance;
-    portfolioState.lastChangePercent = data.daily_change_percent ?? portfolioState.lastChangePercent;
-    portfolioState.lastUpdated = new Date();
-    portfolioState.lastDecisionDate = data.decision_date ?? portfolioState.lastDecisionDate;
-
-    renderPortfolio();
-    updateDecisionStatus("Ready", "Decisions updated for next-day execution.");
-  } catch (error) {
-    updateDecisionStatus("Offline", "Unable to reach the backend API. Using cached values.");
-    console.error("Decision fetch failed:", error);
-  }
-};
+const fetchDecisions = () =>
+  window.buySellDecisionProvider.fetchDecisions({
+    updateDecisionStatus,
+    renderDecisions,
+    portfolioState,
+    renderPortfolio,
+  });
 
 const simulateTradingDay = () => {
   const change = (Math.random() * 1.4 - 0.4) / 100;
@@ -149,14 +126,6 @@ const shouldAutoFetch = () => {
 
 refreshButton.addEventListener("click", fetchDecisions);
 simulateButton.addEventListener("click", simulateTradingDay);
-copyButton.addEventListener("click", async () => {
-  try {
-    await navigator.clipboard.writeText(decisionsEndpoint);
-    updateDecisionStatus("Copied", "API endpoint copied to clipboard.");
-  } catch (error) {
-    updateDecisionStatus("Copy failed", "Clipboard permissions are not available.");
-  }
-});
 
 renderPortfolio();
 

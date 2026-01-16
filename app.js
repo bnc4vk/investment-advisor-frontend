@@ -83,13 +83,44 @@ const updateDecisionStatus = (status, message) => {
   elements.decisionMessage.textContent = message;
 };
 
-const fetchDecisions = () =>
-  window.buySellDecisionProvider.fetchDecisions({
-    updateDecisionStatus,
-    renderDecisions,
-    portfolioState,
-    renderPortfolio,
-  });
+const applyPortfolioUpdate = (update) => {
+  if (!update) {
+    return;
+  }
+
+  if (update.holdings !== null) {
+    portfolioState.holdings = update.holdings;
+  }
+
+  if (update.cashBalance !== null) {
+    portfolioState.cashBalance = update.cashBalance;
+  }
+
+  if (update.lastChangePercent !== null) {
+    portfolioState.lastChangePercent = update.lastChangePercent;
+  }
+
+  if (update.lastDecisionDate !== null) {
+    portfolioState.lastDecisionDate = update.lastDecisionDate;
+  }
+
+  portfolioState.lastUpdated = new Date();
+};
+
+const fetchDecisions = async () => {
+  updateDecisionStatus("Fetching...", "Reaching out to the ML API.");
+
+  try {
+    const { decisions, portfolio } = await fetchBuySellDecisions();
+    renderDecisions(decisions);
+    applyPortfolioUpdate(portfolio);
+    renderPortfolio();
+    updateDecisionStatus("Ready", "Decisions updated for next-day execution.");
+  } catch (error) {
+    updateDecisionStatus("Offline", "Unable to reach the backend API. Using cached values.");
+    console.error("Decision fetch failed:", error);
+  }
+};
 
 const simulateTradingDay = () => {
   const change = (Math.random() * 1.4 - 0.4) / 100;

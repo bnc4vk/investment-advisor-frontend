@@ -7,6 +7,12 @@ an ETF trading strategy powered by a backend render service.
 
 XXX
 
+## Run locally
+
+```bash
+python3 -m http.server 8000
+```
+
 ### Acknowledgements
 
 Both the backend trading strategy and frontend UI were created by Ben Cohen with the aid

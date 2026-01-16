@@ -23,16 +23,29 @@ const unpackDecisionResponse = (data) => ({
 
 const fetchBuySellDecisions = async () => {
   const decisionsEndpoint = `${getApiBase()}/api/decisions`;
+  const payload = buildDecisionRequest();
+  console.info("[decisions] POST request", { endpoint: decisionsEndpoint, payload });
   const response = await fetch(decisionsEndpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(buildDecisionRequest()),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
+    console.error("[decisions] API error response", {
+      endpoint: decisionsEndpoint,
+      status: response.status,
+      statusText: response.statusText,
+    });
     throw new Error(`API returned ${response.status}`);
   }
 
   const data = await response.json();
+  console.info("[decisions] API response received", {
+    endpoint: decisionsEndpoint,
+    decisionDate: data.decision_date ?? null,
+    skipped: data.skipped ?? null,
+    reason: data.reason ?? null,
+  });
   return unpackDecisionResponse(data);
 };

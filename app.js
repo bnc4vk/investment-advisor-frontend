@@ -109,14 +109,30 @@ const applyPortfolioUpdate = (update) => {
 
 const fetchDecisions = async () => {
   updateDecisionStatus("Fetching...", "Reaching out to the ML API.");
+  console.info("[decisions] Fetch starting", {
+    time: new Date().toISOString(),
+    tickers: ["SPY", "QQQ"],
+  });
 
   try {
     const { decisions, portfolio } = await fetchBuySellDecisions();
+    console.info("[decisions] Fetch success", {
+      time: new Date().toISOString(),
+      decisionCount: {
+        sell: decisions.sell?.length ?? 0,
+        buy: decisions.buy?.length ?? 0,
+      },
+      portfolioSnapshot: portfolio,
+    });
     renderDecisions(decisions);
     applyPortfolioUpdate(portfolio);
     renderPortfolio();
     updateDecisionStatus("Ready", "Decisions updated for next-day execution.");
   } catch (error) {
+    console.error("[decisions] Fetch failed", {
+      time: new Date().toISOString(),
+      message: error?.message ?? String(error),
+    });
     updateDecisionStatus("Offline", "Unable to reach the backend API. Using cached values.");
     console.error("Decision fetch failed:", error);
   }

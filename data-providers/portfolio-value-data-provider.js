@@ -30,7 +30,6 @@ const fetchPortfolioValue = async () => {
     endpoint: valuationEndpoint,
     estimatedValue: data.estimated_value ?? null,
   });
-
   return unpackPortfolioValueResponse(data);
 };
 

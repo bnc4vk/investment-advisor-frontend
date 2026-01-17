@@ -1,0 +1,27 @@
+name: Daily decisions call
+
+on:
+  schedule:
+    # 5PM EST (UTC-05:00) = 22:00 UTC
+    - cron: "0 22 * * *"
+  workflow_dispatch:
+
+jobs:
+  call-decisions-endpoint:
+    runs-on: ubuntu-latest
+    env:
+      API_BASE_URL: ${{ secrets.DECISIONS_API_BASE_URL || 'https://investment-advisor-backend-ssf6.onrender.com' }}
+      PORTFOLIO_ID: ${{ secrets.DECISIONS_PORTFOLIO_ID || '00000000-0000-0000-0000-000000000001' }}
+      MODEL_TYPE: ${{ secrets.DECISIONS_MODEL_TYPE || 'random-forest-regression' }}
+    steps:
+      - name: Call /api/decisions
+        run: |
+          set -euo pipefail
+          payload=$(jq -n \
+            --arg portfolio_id "$PORTFOLIO_ID" \
+            --arg model_type "$MODEL_TYPE" \
+            '{portfolio_id: $portfolio_id, model_type: $model_type}')
+          echo "Calling $API_BASE_URL/api/decisions with payload: $payload"
+          curl -sS -X POST "$API_BASE_URL/api/decisions" \
+            -H 'Content-Type: application/json' \
+            -d "$payload"

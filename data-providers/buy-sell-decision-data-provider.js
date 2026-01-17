@@ -4,7 +4,7 @@ const getApiBase = () => {
 };
 
 const buildDecisionRequest = () => ({
-  portfolio_id: "default",
+  portfolio_id: "00000000-0000-0000-0000-000000000001",
 });
 
 const unpackDecisionResponse = (data) => ({

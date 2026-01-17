@@ -24,7 +24,7 @@ const simulateButton = document.getElementById("simulate-day");
 
 
 const formatCurrency = (value) =>
-  value.toLocaleString("en-US", {
+  (Number.isFinite(value) ? value : 0).toLocaleString("en-US", {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 2,
@@ -88,19 +88,19 @@ const applyPortfolioUpdate = (update) => {
     return;
   }
 
-  if (update.holdings !== null) {
+  if (Array.isArray(update.holdings)) {
     portfolioState.holdings = update.holdings;
   }
 
-  if (update.cashBalance !== null) {
+  if (typeof update.cashBalance === "number") {
     portfolioState.cashBalance = update.cashBalance;
   }
 
-  if (update.lastChangePercent !== null) {
+  if (typeof update.lastChangePercent === "number") {
     portfolioState.lastChangePercent = update.lastChangePercent;
   }
 
-  if (update.lastDecisionDate !== null) {
+  if (typeof update.lastDecisionDate === "string") {
     portfolioState.lastDecisionDate = update.lastDecisionDate;
   }
 

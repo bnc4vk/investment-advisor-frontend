@@ -17,6 +17,7 @@ const elements = {
   sellList: document.getElementById("sell-list"),
   buyList: document.getElementById("buy-list"),
   decisionMessage: document.getElementById("decision-message"),
+  portfolioList: document.getElementById("portfolio-list"),
 };
 
 const refreshButton = document.getElementById("refresh-decisions");
@@ -38,6 +39,40 @@ const formatTimestamp = (date) =>
     timeStyle: "short",
   }).format(date);
 
+const buildPortfolioHoldings = (unchangedHoldings = [], buyDecisions = []) => {
+  const holdingsByTicker = new Map();
+
+  unchangedHoldings.forEach((holding) => {
+    if (!holding?.ticker) {
+      return;
+    }
+    holdingsByTicker.set(holding.ticker, {
+      ticker: holding.ticker,
+      shareCount: holding.shareCount ?? 0,
+      value: 0,
+    });
+  });
+
+  buyDecisions.forEach((buy) => {
+    if (!buy?.ticker) {
+      return;
+    }
+    const existing = holdingsByTicker.get(buy.ticker);
+    const sharesToBuy = buy.sharesToBuy ?? 0;
+    if (existing) {
+      existing.shareCount += sharesToBuy;
+    } else {
+      holdingsByTicker.set(buy.ticker, {
+        ticker: buy.ticker,
+        shareCount: sharesToBuy,
+        value: 0,
+      });
+    }
+  });
+
+  return Array.from(holdingsByTicker.values()).sort((a, b) => a.ticker.localeCompare(b.ticker));
+};
+
 const renderPortfolio = () => {
   const portfolioValue = portfolioState.cashBalance + portfolioState.holdings.reduce((sum, holding) => sum + holding.value, 0);
   elements.balance.textContent = formatCurrency(portfolioValue);
@@ -49,6 +84,21 @@ const renderPortfolio = () => {
   if (portfolioState.lastUpdated) {
     elements.lastUpdated.textContent = `Last updated: ${formatTimestamp(portfolioState.lastUpdated)}`;
   }
+};
+
+const renderPortfolioHoldings = () => {
+  elements.portfolioList.innerHTML = "";
+
+  if (!portfolioState.holdings.length) {
+    elements.portfolioList.innerHTML = "<li class=\"decision-list__empty\">No holdings loaded yet.</li>";
+    return;
+  }
+
+  portfolioState.holdings.forEach((holding) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${holding.ticker} <span class="decision-subtext">(${holding.shareCount} shares)</span></span><span class="decision-pill">Holding</span>`;
+    elements.portfolioList.appendChild(li);
+  });
 };
 
 const renderDecisions = (decisions) => {
@@ -67,13 +117,13 @@ const renderDecisions = (decisions) => {
 
   sell.forEach((item) => {
     const li = document.createElement("li");
-    li.innerHTML = `<span>${item.ticker}</span><span class=\"decision-pill decision-pill--sell\">Sell</span>`;
+    li.innerHTML = `<span>${item.ticker} <span class="decision-subtext">(${item.sharesToSell} shares)</span></span><span class=\"decision-pill decision-pill--sell\">Sell</span>`;
     elements.sellList.appendChild(li);
   });
 
   buy.forEach((item) => {
     const li = document.createElement("li");
-    li.innerHTML = `<span>${item.ticker}</span><span class=\"decision-pill\">Buy</span>`;
+    li.innerHTML = `<span>${item.ticker} <span class="decision-subtext">(${item.sharesToBuy} shares)</span></span><span class=\"decision-pill\">Buy</span>`;
     elements.buyList.appendChild(li);
   });
 };
@@ -124,13 +174,13 @@ const fetchDecisions = async () => {
       decisionMeta: meta,
     });
     renderDecisions(decisions);
+    const fullHoldings = buildPortfolioHoldings(meta.unchangedHoldings ?? [], decisions.buy ?? []);
     applyPortfolioUpdate({
-      holdings: meta.unchangedEtfs?.length
-        ? meta.unchangedEtfs.map((ticker) => ({ ticker, value: 0 }))
-        : null,
+      holdings: fullHoldings.length ? fullHoldings : null,
       lastDecisionDate: meta.decisionDate ?? null,
     });
     renderPortfolio();
+    renderPortfolioHoldings();
     if (meta.skipped) {
       updateDecisionStatus("Skipped", meta.reason ?? "Decisions skipped by backend.");
     } else {
@@ -183,6 +233,7 @@ refreshButton.addEventListener("click", fetchDecisions);
 simulateButton.addEventListener("click", simulateTradingDay);
 
 renderPortfolio();
+renderPortfolioHoldings();
 
 if (shouldAutoFetch()) {
   fetchDecisions();

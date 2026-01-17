@@ -9,14 +9,27 @@ const buildDecisionRequest = () => ({
 
 const unpackDecisionResponse = (data) => ({
   decisions: {
-    sell: data.sell ?? [],
-    buy: (data.buy ?? []).map((ticker) => ({ ticker })),
+    sell: (data.sell ?? []).map((item) => ({
+      ticker: item.ticker,
+      sharesToSell: item.shares_to_sell ?? 0,
+      predictedReturn: item.predicted_return ?? null,
+      predictedReturnPeriod: item.predicted_return_period ?? null,
+      selloffDate: item.selloff_date ?? null,
+      selloffReturn: item.selloff_return ?? null,
+    })),
+    buy: (data.buy ?? []).map((item) => ({
+      ticker: item.ticker,
+      sharesToBuy: item.shares_to_buy ?? 0,
+    })),
   },
   meta: {
     skipped: data.skipped ?? false,
     reason: data.reason ?? null,
     decisionDate: data.decision_date ?? null,
-    unchangedEtfs: data.unchanged_etfs ?? [],
+    unchangedHoldings: (data.unchanged_holdings ?? []).map((holding) => ({
+      ticker: holding.ticker,
+      shareCount: holding.share_count ?? 0,
+    })),
   },
 });
 

@@ -5,6 +5,7 @@ const portfolioState = {
   lastChangePercent: 0,
   lastUpdated: null,
   lastDecisionDate: null,
+  estimatedValue: null,
 };
 
 const elements = {
@@ -22,6 +23,7 @@ const elements = {
 
 const refreshButton = document.getElementById("refresh-decisions");
 const simulateButton = document.getElementById("simulate-day");
+const valuationButton = document.getElementById("refresh-valuation");
 
 
 const formatCurrency = (value) =>
@@ -75,7 +77,8 @@ const buildPortfolioHoldings = (unchangedHoldings = [], buyDecisions = []) => {
 
 const renderPortfolio = () => {
   const portfolioValue = portfolioState.cashBalance + portfolioState.holdings.reduce((sum, holding) => sum + holding.value, 0);
-  elements.balance.textContent = formatCurrency(portfolioValue);
+  const displayValue = Number.isFinite(portfolioState.estimatedValue) ? portfolioState.estimatedValue : portfolioValue;
+  elements.balance.textContent = formatCurrency(displayValue);
   elements.cashBalance.textContent = formatCurrency(portfolioState.cashBalance);
   elements.holdingCount.textContent = `${portfolioState.holdings.length} ETFs`;
   elements.change.textContent = formatPercent(portfolioState.lastChangePercent);
@@ -196,6 +199,36 @@ const fetchDecisions = async () => {
   }
 };
 
+const applyPortfolioValuation = (valuation) => {
+  if (!valuation) {
+    return;
+  }
+
+  if (typeof valuation.estimatedValue === "number") {
+    portfolioState.estimatedValue = valuation.estimatedValue;
+    portfolioState.lastChangePercent = ((valuation.estimatedValue - portfolioState.startingBalance) / portfolioState.startingBalance) * 100;
+  }
+
+  portfolioState.lastUpdated = new Date();
+};
+
+const fetchPortfolioValuation = async () => {
+  console.info("[valuation] Fetch starting", {
+    time: new Date().toISOString(),
+  });
+
+  try {
+    const valuation = await fetchPortfolioValue();
+    applyPortfolioValuation(valuation);
+    renderPortfolio();
+  } catch (error) {
+    console.error("[valuation] Fetch failed", {
+      time: new Date().toISOString(),
+      message: error?.message ?? String(error),
+    });
+  }
+};
+
 const simulateTradingDay = () => {
   const change = (Math.random() * 1.4 - 0.4) / 100;
   const portfolioValue = portfolioState.cashBalance + portfolioState.holdings.reduce((sum, holding) => sum + holding.value, 0);
@@ -231,9 +264,11 @@ const shouldAutoFetch = () => {
 
 refreshButton.addEventListener("click", fetchDecisions);
 simulateButton.addEventListener("click", simulateTradingDay);
+valuationButton.addEventListener("click", fetchPortfolioValuation);
 
 renderPortfolio();
 renderPortfolioHoldings();
+fetchPortfolioValuation();
 
 if (shouldAutoFetch()) {
   fetchDecisions();

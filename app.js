@@ -269,12 +269,16 @@ const shouldAutoFetch = () => {
 
 refreshButton.addEventListener("click", fetchDecisions);
 simulateButton.addEventListener("click", simulateTradingDay);
-valuationButton.addEventListener("click", () => {
-  console.info("[valuation] Manual refresh requested", {
-    time: new Date().toISOString(),
+if (valuationButton) {
+  valuationButton.addEventListener("click", () => {
+    console.info("[valuation] Manual refresh requested", {
+      time: new Date().toISOString(),
+    });
+    fetchPortfolioValuation();
   });
-  fetchPortfolioValuation();
-});
+} else {
+  console.error("[valuation] Refresh button not found in DOM. Check the refresh-valuation element.");
+}
 
 renderPortfolio();
 renderPortfolioHoldings();

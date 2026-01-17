@@ -22,7 +22,6 @@ const elements = {
 };
 
 const refreshButton = document.getElementById("refresh-decisions");
-const simulateButton = document.getElementById("simulate-day");
 const valuationButton = document.getElementById("refresh-valuation");
 
 
@@ -89,46 +88,46 @@ const renderPortfolio = () => {
   }
 };
 
-const renderPortfolioHoldings = () => {
-  elements.portfolioList.innerHTML = "";
+const renderList = (listElement, items, emptyMessage, renderItem) => {
+  listElement.innerHTML = "";
 
-  if (!portfolioState.holdings.length) {
-    elements.portfolioList.innerHTML = "<li class=\"decision-list__empty\">No holdings loaded yet.</li>";
+  if (!items.length) {
+    listElement.innerHTML = `<li class="decision-list__empty">${emptyMessage}</li>`;
     return;
   }
 
-  portfolioState.holdings.forEach((holding) => {
+  items.forEach((item) => {
     const li = document.createElement("li");
-    li.innerHTML = `<span>${holding.ticker} <span class="decision-subtext">(${holding.shareCount} shares)</span></span><span class="decision-pill">Holding</span>`;
-    elements.portfolioList.appendChild(li);
+    li.innerHTML = renderItem(item);
+    listElement.appendChild(li);
   });
+};
+
+const renderPortfolioHoldings = () => {
+  renderList(
+    elements.portfolioList,
+    portfolioState.holdings,
+    "No holdings loaded yet.",
+    (holding) => `<span>${holding.ticker} <span class="decision-subtext">(${holding.shareCount} shares)</span></span><span class="decision-pill">Holding</span>`,
+  );
 };
 
 const renderDecisions = (decisions) => {
   const { sell = [], buy = [] } = decisions;
 
-  elements.sellList.innerHTML = "";
-  elements.buyList.innerHTML = "";
+  renderList(
+    elements.sellList,
+    sell,
+    "No sell candidates today.",
+    (item) => `<span>${item.ticker} <span class="decision-subtext">(${item.sharesToSell} shares)</span></span><span class="decision-pill decision-pill--sell">Sell</span>`,
+  );
 
-  if (sell.length === 0) {
-    elements.sellList.innerHTML = "<li class=\"decision-list__empty\">No sell candidates today.</li>";
-  }
-
-  if (buy.length === 0) {
-    elements.buyList.innerHTML = "<li class=\"decision-list__empty\">No buy candidates today.</li>";
-  }
-
-  sell.forEach((item) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<span>${item.ticker} <span class="decision-subtext">(${item.sharesToSell} shares)</span></span><span class=\"decision-pill decision-pill--sell\">Sell</span>`;
-    elements.sellList.appendChild(li);
-  });
-
-  buy.forEach((item) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<span>${item.ticker} <span class="decision-subtext">(${item.sharesToBuy} shares)</span></span><span class=\"decision-pill\">Buy</span>`;
-    elements.buyList.appendChild(li);
-  });
+  renderList(
+    elements.buyList,
+    buy,
+    "No buy candidates today.",
+    (item) => `<span>${item.ticker} <span class="decision-subtext">(${item.sharesToBuy} shares)</span></span><span class="decision-pill">Buy</span>`,
+  );
 };
 
 const updateDecisionStatus = (status, message) => {
@@ -162,20 +161,9 @@ const applyPortfolioUpdate = (update) => {
 
 const fetchDecisions = async () => {
   updateDecisionStatus("Fetching...", "Reaching out to the ML API.");
-  console.info("[decisions] Fetch starting", {
-    time: new Date().toISOString(),
-  });
 
   try {
     const { decisions, meta } = await fetchBuySellDecisions();
-    console.info("[decisions] Fetch success", {
-      time: new Date().toISOString(),
-      decisionCount: {
-        sell: decisions.sell?.length ?? 0,
-        buy: decisions.buy?.length ?? 0,
-      },
-      decisionMeta: meta,
-    });
     renderDecisions(decisions);
     const fullHoldings = buildPortfolioHoldings(meta.unchangedHoldings ?? [], decisions.buy ?? []);
     applyPortfolioUpdate({
@@ -190,12 +178,8 @@ const fetchDecisions = async () => {
       updateDecisionStatus("Ready", "Decisions updated for next-day execution.");
     }
   } catch (error) {
-    console.error("[decisions] Fetch failed", {
-      time: new Date().toISOString(),
-      message: error?.message ?? String(error),
-    });
     updateDecisionStatus("Offline", "Unable to reach the backend API. Using cached values.");
-    console.error("Decision fetch failed:", error);
+    console.error("[decisions] Fetch failed", error);
   }
 };
 
@@ -218,10 +202,6 @@ const fetchPortfolioValuation = async () => {
     return;
   }
 
-  console.info("[valuation] Fetch starting", {
-    time: new Date().toISOString(),
-  });
-
   try {
     const valuation = await fetchPortfolioValue();
     applyPortfolioValuation(valuation);
@@ -232,20 +212,6 @@ const fetchPortfolioValuation = async () => {
       message: error?.message ?? String(error),
     });
   }
-};
-
-const simulateTradingDay = () => {
-  const change = (Math.random() * 1.4 - 0.4) / 100;
-  const portfolioValue = portfolioState.cashBalance + portfolioState.holdings.reduce((sum, holding) => sum + holding.value, 0);
-  const newValue = portfolioValue * (1 + change);
-  const delta = newValue - portfolioValue;
-
-  portfolioState.cashBalance += delta;
-  portfolioState.lastChangePercent = change * 100;
-  portfolioState.lastUpdated = new Date();
-
-  renderPortfolio();
-  updateDecisionStatus("Simulated", "Local simulation ran. Fetch decisions after market close.");
 };
 
 const shouldAutoFetch = () => {

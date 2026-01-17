@@ -193,6 +193,10 @@ const applyPortfolioValuation = (valuation) => {
     portfolioState.lastChangePercent = ((valuation.estimatedValue - portfolioState.startingBalance) / portfolioState.startingBalance) * 100;
   }
 
+  if (Array.isArray(valuation.holdings)) {
+    portfolioState.holdings = valuation.holdings;
+  }
+
   portfolioState.lastUpdated = new Date();
 };
 
@@ -206,6 +210,7 @@ const fetchPortfolioValuation = async () => {
     const valuation = await fetchPortfolioValue();
     applyPortfolioValuation(valuation);
     renderPortfolio();
+    renderPortfolioHoldings();
   } catch (error) {
     console.error("[valuation] Fetch failed", {
       time: new Date().toISOString(),

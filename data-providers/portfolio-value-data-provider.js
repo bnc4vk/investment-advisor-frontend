@@ -4,10 +4,19 @@ const buildPortfolioValueRequest = () => ({
 
 const unpackPortfolioValueResponse = (data) => ({
   estimatedValue: typeof data.estimated_value === "number" ? data.estimated_value : null,
+  holdings: Array.isArray(data.holdings)
+    ? data.holdings
+        .filter((holding) => holding?.ticker)
+        .map((holding) => ({
+          ticker: holding.ticker,
+          shareCount: typeof holding.share_count === "number" ? holding.share_count : 0,
+          value: 0,
+        }))
+    : [],
 });
 
 const fetchPortfolioValue = async () => {
-  const valuationEndpoint = `${window.getApiBase()}/api/portfolio/value`;
+  const valuationEndpoint = `${window.getApiBase()}/api/portfolio`;
   const payload = buildPortfolioValueRequest();
   console.info("[valuation] POST request", { endpoint: valuationEndpoint, payload });
   const response = await fetch(valuationEndpoint, {
@@ -29,6 +38,7 @@ const fetchPortfolioValue = async () => {
   console.info("[valuation] API response received", {
     endpoint: valuationEndpoint,
     estimatedValue: data.estimated_value ?? null,
+    holdingsCount: Array.isArray(data.holdings) ? data.holdings.length : 0,
   });
   return unpackPortfolioValueResponse(data);
 };

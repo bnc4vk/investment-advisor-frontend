@@ -38,3 +38,5 @@ const fetchPortfolioValue = async () => {
 
   return unpackPortfolioValueResponse(data);
 };
+
+window.fetchPortfolioValue = fetchPortfolioValue;

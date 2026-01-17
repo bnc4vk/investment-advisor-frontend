@@ -4,20 +4,19 @@ const getApiBase = () => {
 };
 
 const buildDecisionRequest = () => ({
-  tickers: ["SPY", "QQQ"],
-  timestamp: new Date().toISOString(),
+  portfolio_id: "default",
 });
 
 const unpackDecisionResponse = (data) => ({
   decisions: {
     sell: data.sell ?? [],
-    buy: data.buy ?? [],
+    buy: (data.buy ?? []).map((ticker) => ({ ticker })),
   },
-  portfolio: {
-    holdings: data.updated_holdings ?? null,
-    cashBalance: data.cash_balance ?? null,
-    lastChangePercent: data.daily_change_percent ?? null,
-    lastDecisionDate: data.decision_date ?? null,
+  meta: {
+    skipped: data.skipped ?? false,
+    reason: data.reason ?? null,
+    decisionDate: data.decision_date ?? null,
+    unchangedEtfs: data.unchanged_etfs ?? [],
   },
 });
 

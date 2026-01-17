@@ -111,23 +111,31 @@ const fetchDecisions = async () => {
   updateDecisionStatus("Fetching...", "Reaching out to the ML API.");
   console.info("[decisions] Fetch starting", {
     time: new Date().toISOString(),
-    tickers: ["SPY", "QQQ"],
   });
 
   try {
-    const { decisions, portfolio } = await fetchBuySellDecisions();
+    const { decisions, meta } = await fetchBuySellDecisions();
     console.info("[decisions] Fetch success", {
       time: new Date().toISOString(),
       decisionCount: {
         sell: decisions.sell?.length ?? 0,
         buy: decisions.buy?.length ?? 0,
       },
-      portfolioSnapshot: portfolio,
+      decisionMeta: meta,
     });
     renderDecisions(decisions);
-    applyPortfolioUpdate(portfolio);
+    applyPortfolioUpdate({
+      holdings: meta.unchangedEtfs?.length
+        ? meta.unchangedEtfs.map((ticker) => ({ ticker, value: 0 }))
+        : null,
+      lastDecisionDate: meta.decisionDate ?? null,
+    });
     renderPortfolio();
-    updateDecisionStatus("Ready", "Decisions updated for next-day execution.");
+    if (meta.skipped) {
+      updateDecisionStatus("Skipped", meta.reason ?? "Decisions skipped by backend.");
+    } else {
+      updateDecisionStatus("Ready", "Decisions updated for next-day execution.");
+    }
   } catch (error) {
     console.error("[decisions] Fetch failed", {
       time: new Date().toISOString(),

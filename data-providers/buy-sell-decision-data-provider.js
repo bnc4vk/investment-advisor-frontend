@@ -4,7 +4,8 @@ const getApiBase = () => {
 };
 
 const buildDecisionRequest = () => ({
-  portfolio_id: "00000000-0000-0000-0000-000000000001",
+  portfolio_id: window.DECISION_CONFIG?.portfolioId,
+  model_type: window.DECISION_CONFIG?.modelTypes.RANDOM_FOREST_REGRESSION,
 });
 
 const unpackDecisionResponse = (data) => ({

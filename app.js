@@ -213,6 +213,11 @@ const applyPortfolioValuation = (valuation) => {
 };
 
 const fetchPortfolioValuation = async () => {
+  if (typeof fetchPortfolioValue !== "function") {
+    console.error("[valuation] Data provider not loaded. Ensure portfolio-value-data-provider.js is included before app.js.");
+    return;
+  }
+
   console.info("[valuation] Fetch starting", {
     time: new Date().toISOString(),
   });
@@ -264,7 +269,12 @@ const shouldAutoFetch = () => {
 
 refreshButton.addEventListener("click", fetchDecisions);
 simulateButton.addEventListener("click", simulateTradingDay);
-valuationButton.addEventListener("click", fetchPortfolioValuation);
+valuationButton.addEventListener("click", () => {
+  console.info("[valuation] Manual refresh requested", {
+    time: new Date().toISOString(),
+  });
+  fetchPortfolioValuation();
+});
 
 renderPortfolio();
 renderPortfolioHoldings();

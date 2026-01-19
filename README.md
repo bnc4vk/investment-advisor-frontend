@@ -3,10 +3,6 @@
 This repo contains a lightweight webpage that displays the portfolio performance of
 an ETF trading strategy powered by a backend render service.
 
-## Web Page URL
-
-XXX
-
 ## Run locally
 
 ```bash

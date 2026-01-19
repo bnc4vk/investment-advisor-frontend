@@ -4,6 +4,7 @@ const buildPortfolioValueRequest = () => ({
 
 const unpackPortfolioValueResponse = (data) => ({
   estimatedValue: typeof data.estimated_value === "number" ? data.estimated_value : null,
+  capitalBalance: typeof data.capital_balance === "number" ? data.capital_balance : null,
   holdings: Array.isArray(data.holdings)
     ? data.holdings
         .filter((holding) => holding?.ticker)

@@ -194,6 +194,10 @@ const applyPortfolioValuation = (valuation) => {
     portfolioState.lastChangePercent = ((valuation.estimatedValue - portfolioState.startingBalance) / portfolioState.startingBalance) * 100;
   }
 
+  if (typeof valuation.capitalBalance === "number") {
+    portfolioState.cashBalance = valuation.capitalBalance;
+  }
+
   if (Array.isArray(valuation.holdings)) {
     portfolioState.holdings = valuation.holdings;
   }

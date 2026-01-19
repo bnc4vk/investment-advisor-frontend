@@ -168,6 +168,7 @@ const fetchDecisions = async () => {
     const fullHoldings = buildPortfolioHoldings(meta.unchangedHoldings ?? [], decisions.buy ?? []);
     applyPortfolioUpdate({
       holdings: fullHoldings.length ? fullHoldings : null,
+      cashBalance: meta.capitalBalance ?? null,
       lastDecisionDate: meta.decisionDate ?? null,
     });
     renderPortfolio();

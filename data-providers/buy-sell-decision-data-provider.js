@@ -22,6 +22,7 @@ const unpackDecisionResponse = (data) => ({
     skipped: data.skipped ?? false,
     reason: data.reason ?? null,
     decisionDate: data.decision_date ?? null,
+    capitalBalance: data.capital_balance ?? null,
     unchangedHoldings: (data.unchanged_holdings ?? []).map((holding) => ({
       ticker: holding.ticker,
       shareCount: holding.share_count ?? 0,

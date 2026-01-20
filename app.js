@@ -322,6 +322,14 @@ const applyPortfolioValuation = (valuation) => {
     portfolioState.holdings = valuation.holdings;
   }
 
+  if (Array.isArray(valuation.latestSellDecisions) || Array.isArray(valuation.latestBuyDecisions)) {
+    renderDecisions({
+      sell: valuation.latestSellDecisions ?? [],
+      buy: valuation.latestBuyDecisions ?? [],
+    });
+    updateDecisionStatus("Ready", "Most recent trade decisions are now available.");
+  }
+
   portfolioState.lastUpdated = new Date();
 };
 

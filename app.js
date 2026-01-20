@@ -73,7 +73,6 @@ const formatPercent = (value) => `${value >= 0 ? "+" : ""}${value.toFixed(2)}% t
 const formatTimestamp = (date) =>
   new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
-    timeStyle: "short",
   }).format(date);
 
 const formatTransactionTime = (value) => {

@@ -6,6 +6,10 @@ const portfolioState = {
   lastUpdated: null,
   lastDecisionDate: null,
   estimatedValue: null,
+  transactionHistory: {
+    sales: [],
+    purchases: [],
+  },
 };
 
 const elements = {
@@ -19,11 +23,16 @@ const elements = {
   buyList: document.getElementById("buy-list"),
   decisionMessage: document.getElementById("decision-message"),
   portfolioList: document.getElementById("portfolio-list"),
+  transactionSalesList: document.getElementById("transaction-sales-list"),
+  transactionPurchasesList: document.getElementById("transaction-purchases-list"),
+  transactionStatus: document.getElementById("transaction-status"),
+  transactionMessage: document.getElementById("transaction-message"),
   loadingOverlay: document.getElementById("loading-overlay"),
 };
 
 const refreshButton = document.getElementById("refresh-decisions");
 const valuationButton = document.getElementById("refresh-valuation");
+const transactionButton = document.getElementById("refresh-transactions");
 
 const setPageLoading = (isLoading) => {
   document.body.classList.toggle("is-loading", isLoading);
@@ -66,6 +75,17 @@ const formatTimestamp = (date) =>
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
+
+const formatTransactionTime = (value) => {
+  if (!value) {
+    return "Unknown time";
+  }
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "Unknown time";
+  }
+  return formatTimestamp(parsed);
+};
 
 const buildPortfolioHoldings = (unchangedHoldings = [], buyDecisions = []) => {
   const holdingsByTicker = new Map();
@@ -139,6 +159,22 @@ const renderPortfolioHoldings = () => {
   );
 };
 
+const renderTransactionHistory = () => {
+  renderList(
+    elements.transactionSalesList,
+    portfolioState.transactionHistory.sales,
+    "No sales loaded yet.",
+    (entry) => `<span>${entry.ticker} <span class="decision-subtext">(${entry.shareCount} shares • ${formatTransactionTime(entry.transactionTime)})</span></span><span class="decision-pill decision-pill--sell">Sale</span>`,
+  );
+
+  renderList(
+    elements.transactionPurchasesList,
+    portfolioState.transactionHistory.purchases,
+    "No purchases loaded yet.",
+    (entry) => `<span>${entry.ticker} <span class="decision-subtext">(${entry.shareCount} shares • ${formatTransactionTime(entry.transactionTime)})</span></span><span class="decision-pill">Purchase</span>`,
+  );
+};
+
 const renderDecisions = (decisions) => {
   const { sell = [], buy = [] } = decisions;
 
@@ -160,6 +196,11 @@ const renderDecisions = (decisions) => {
 const updateDecisionStatus = (status, message) => {
   elements.decisionStatus.textContent = status;
   elements.decisionMessage.textContent = message;
+};
+
+const updateTransactionStatus = (status, message) => {
+  elements.transactionStatus.textContent = status;
+  elements.transactionMessage.textContent = message;
 };
 
 const applyPortfolioUpdate = (update) => {
@@ -184,6 +225,20 @@ const applyPortfolioUpdate = (update) => {
   }
 
   portfolioState.lastUpdated = new Date();
+};
+
+const applyTransactionHistory = (history) => {
+  if (!history) {
+    return;
+  }
+
+  if (Array.isArray(history.sales)) {
+    portfolioState.transactionHistory.sales = history.sales;
+  }
+
+  if (Array.isArray(history.purchases)) {
+    portfolioState.transactionHistory.purchases = history.purchases;
+  }
 };
 
 const fetchDecisions = async ({ showButtonLoading = false } = {}) => {
@@ -215,6 +270,37 @@ const fetchDecisions = async ({ showButtonLoading = false } = {}) => {
   } finally {
     if (showButtonLoading) {
       setButtonLoading(refreshButton, false);
+    }
+  }
+};
+
+const fetchTransactionHistoryData = async ({ showButtonLoading = false } = {}) => {
+  updateTransactionStatus("Fetching...", "Reaching out for transaction history.");
+
+  if (showButtonLoading) {
+    setButtonLoading(transactionButton, true);
+  }
+
+  if (typeof window.fetchTransactionHistory !== "function") {
+    console.error("[transactions] Data provider not loaded. Ensure transaction-history-data-provider.js is included before app.js.");
+    updateTransactionStatus("Offline", "Transaction history provider unavailable.");
+    if (showButtonLoading) {
+      setButtonLoading(transactionButton, false);
+    }
+    return;
+  }
+
+  try {
+    const history = await window.fetchTransactionHistory();
+    applyTransactionHistory(history);
+    renderTransactionHistory();
+    updateTransactionStatus("Ready", "Transaction history is up to date.");
+  } catch (error) {
+    updateTransactionStatus("Offline", "Unable to reach the backend API.");
+    console.error("[transactions] Fetch failed", error);
+  } finally {
+    if (showButtonLoading) {
+      setButtonLoading(transactionButton, false);
     }
   }
 };
@@ -308,9 +394,14 @@ valuationButton.addEventListener("click", () => {
   triggerButtonPress(valuationButton);
   fetchPortfolioValuation({ showButtonLoading: true });
 });
+transactionButton.addEventListener("click", () => {
+  triggerButtonPress(transactionButton);
+  fetchTransactionHistoryData({ showButtonLoading: true });
+});
 
 renderPortfolio();
 renderPortfolioHoldings();
+renderTransactionHistory();
 fetchPortfolioValuation({ showOverlay: true });
 
 if (shouldAutoFetch()) {

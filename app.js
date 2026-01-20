@@ -6,6 +6,8 @@ const portfolioState = {
   lastUpdated: null,
   lastDecisionDate: null,
   estimatedValue: null,
+  latestSellDecisions: [],
+  latestBuyDecisions: [],
 };
 
 const elements = {
@@ -19,6 +21,8 @@ const elements = {
   buyList: document.getElementById("buy-list"),
   decisionMessage: document.getElementById("decision-message"),
   portfolioList: document.getElementById("portfolio-list"),
+  latestSellList: document.getElementById("latest-sell-list"),
+  latestBuyList: document.getElementById("latest-buy-list"),
   loadingOverlay: document.getElementById("loading-overlay"),
 };
 
@@ -157,6 +161,22 @@ const renderDecisions = (decisions) => {
   );
 };
 
+const renderLatestDecisions = () => {
+  renderList(
+    elements.latestSellList,
+    portfolioState.latestSellDecisions,
+    "No recent sell decisions.",
+    (item) => `<span>${item.ticker} <span class="decision-subtext">(${item.shareCount} shares)</span></span><span class="decision-pill decision-pill--sell">Latest sell</span>`,
+  );
+
+  renderList(
+    elements.latestBuyList,
+    portfolioState.latestBuyDecisions,
+    "No recent buy decisions.",
+    (item) => `<span>${item.ticker} <span class="decision-subtext">(${item.shareCount} shares)</span></span><span class="decision-pill">Latest buy</span>`,
+  );
+};
+
 const updateDecisionStatus = (status, message) => {
   elements.decisionStatus.textContent = status;
   elements.decisionMessage.textContent = message;
@@ -207,7 +227,7 @@ const fetchDecisions = async ({ showButtonLoading = false } = {}) => {
     if (meta.skipped) {
       updateDecisionStatus("Skipped", meta.reason ?? "Decisions skipped by backend.");
     } else {
-      updateDecisionStatus("Ready", "Decisions updated for next-day execution.");
+      updateDecisionStatus("Ready", "Most recent trade decisions are now available.");
     }
   } catch (error) {
     updateDecisionStatus("Offline", "Unable to reach the backend API. Using cached values.");
@@ -235,6 +255,14 @@ const applyPortfolioValuation = (valuation) => {
 
   if (Array.isArray(valuation.holdings)) {
     portfolioState.holdings = valuation.holdings;
+  }
+
+  if (Array.isArray(valuation.latestSellDecisions)) {
+    portfolioState.latestSellDecisions = valuation.latestSellDecisions;
+  }
+
+  if (Array.isArray(valuation.latestBuyDecisions)) {
+    portfolioState.latestBuyDecisions = valuation.latestBuyDecisions;
   }
 
   portfolioState.lastUpdated = new Date();
@@ -265,6 +293,7 @@ const fetchPortfolioValuation = async ({ showOverlay = false, showButtonLoading 
     applyPortfolioValuation(valuation);
     renderPortfolio();
     renderPortfolioHoldings();
+    renderLatestDecisions();
   } catch (error) {
     console.error("[valuation] Fetch failed", {
       time: new Date().toISOString(),
@@ -311,6 +340,7 @@ valuationButton.addEventListener("click", () => {
 
 renderPortfolio();
 renderPortfolioHoldings();
+renderLatestDecisions();
 fetchPortfolioValuation({ showOverlay: true });
 
 if (shouldAutoFetch()) {

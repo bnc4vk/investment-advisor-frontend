@@ -14,6 +14,22 @@ const unpackPortfolioValueResponse = (data) => ({
           value: 0,
         }))
     : [],
+  latestSellDecisions: Array.isArray(data.latest_sell_decisions)
+    ? data.latest_sell_decisions
+        .filter((decision) => decision?.ticker)
+        .map((decision) => ({
+          ticker: decision.ticker,
+          shareCount: typeof decision.share_count === "number" ? decision.share_count : 0,
+        }))
+    : [],
+  latestBuyDecisions: Array.isArray(data.latest_buy_decisions)
+    ? data.latest_buy_decisions
+        .filter((decision) => decision?.ticker)
+        .map((decision) => ({
+          ticker: decision.ticker,
+          shareCount: typeof decision.share_count === "number" ? decision.share_count : 0,
+        }))
+    : [],
 });
 
 const fetchPortfolioValue = async () => {

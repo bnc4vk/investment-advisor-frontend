@@ -2,6 +2,22 @@ const buildPortfolioValueRequest = () => ({
   portfolio_id: window.DECISION_CONFIG?.portfolioId,
 });
 
+const getDecisionShareCount = (decision) => {
+  if (typeof decision?.shares_to_sell === "number") {
+    return decision.shares_to_sell;
+  }
+  if (typeof decision?.shares_to_buy === "number") {
+    return decision.shares_to_buy;
+  }
+  if (typeof decision?.share_count === "number") {
+    return decision.share_count;
+  }
+  if (typeof decision?.shares === "number") {
+    return decision.shares;
+  }
+  return 0;
+};
+
 const unpackPortfolioValueResponse = (data) => ({
   estimatedValue: typeof data.estimated_value === "number" ? data.estimated_value : null,
   capitalBalance: typeof data.capital_balance === "number" ? data.capital_balance : null,
@@ -12,6 +28,22 @@ const unpackPortfolioValueResponse = (data) => ({
           ticker: holding.ticker,
           shareCount: typeof holding.share_count === "number" ? holding.share_count : 0,
           value: 0,
+        }))
+    : [],
+  latestSellDecisions: Array.isArray(data.latest_sell_decisions)
+    ? data.latest_sell_decisions
+        .filter((decision) => decision?.ticker)
+        .map((decision) => ({
+          ticker: decision.ticker,
+          sharesToSell: getDecisionShareCount(decision),
+        }))
+    : [],
+  latestBuyDecisions: Array.isArray(data.latest_buy_decisions)
+    ? data.latest_buy_decisions
+        .filter((decision) => decision?.ticker)
+        .map((decision) => ({
+          ticker: decision.ticker,
+          sharesToBuy: getDecisionShareCount(decision),
         }))
     : [],
 });

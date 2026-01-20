@@ -1,5 +1,5 @@
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
   --bg: #f6f7fb;
   --card: #ffffff;
   --text: #0f172a;
@@ -9,7 +9,37 @@
   --border: #e2e8f0;
   --success: #16a34a;
   --danger: #dc2626;
+  --surface: #f8fafc;
+  --surface-border: #edf2f7;
+  --badge-bg: #eef2ff;
+  --code-bg: #f1f5f9;
+  --panel-secondary-bg: #0f172a;
+  --panel-secondary-text: #ffffff;
+  --panel-secondary-muted: #94a3b8;
+  --panel-secondary-label: #cbd5f5;
   font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1220;
+    --card: #111827;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #60a5fa;
+    --accent-dark: #3b82f6;
+    --border: #1f2937;
+    --success: #22c55e;
+    --danger: #f87171;
+    --surface: #0f172a;
+    --surface-border: #1e293b;
+    --badge-bg: rgba(96, 165, 250, 0.15);
+    --code-bg: #1f2937;
+    --panel-secondary-bg: #0f172a;
+    --panel-secondary-text: #e2e8f0;
+    --panel-secondary-muted: #94a3b8;
+    --panel-secondary-label: #cbd5f5;
+  }
 }
 
 * {
@@ -185,7 +215,7 @@ main {
 }
 
 .badge {
-  background: #eef2ff;
+  background: var(--badge-bg);
   color: var(--accent);
   padding: 0.4rem 0.75rem;
   border-radius: 999px;
@@ -265,10 +295,10 @@ main {
 }
 
 .decision-list li {
-  background: #f8fafc;
+  background: var(--surface);
   border-radius: 0.75rem;
   padding: 0.75rem 1rem;
-  border: 1px solid #edf2f7;
+  border: 1px solid var(--surface-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -301,14 +331,14 @@ main {
 }
 
 .panel--secondary {
-  background: #0f172a;
-  color: white;
+  background: var(--panel-secondary-bg);
+  color: var(--panel-secondary-text);
   border: none;
 }
 
 .panel--secondary .panel__subtitle,
 .panel--secondary .panel__note {
-  color: #94a3b8;
+  color: var(--panel-secondary-muted);
 }
 
 .contact-card__label {
@@ -316,11 +346,11 @@ main {
   letter-spacing: 0.1em;
   font-size: 0.75rem;
   margin: 0;
-  color: #cbd5f5;
+  color: var(--panel-secondary-label);
 }
 
 .contact-card__link {
-  color: white;
+  color: var(--panel-secondary-text);
   font-size: 1.1rem;
   font-weight: 600;
   text-decoration: none;
@@ -332,7 +362,7 @@ main {
 
 .contact-card__note {
   margin-top: 0.75rem;
-  color: #94a3b8;
+  color: var(--panel-secondary-muted);
 }
 
 footer {
@@ -343,7 +373,7 @@ footer {
 }
 
 code {
-  background: #f1f5f9;
+  background: var(--code-bg);
   padding: 0.2rem 0.4rem;
   border-radius: 0.35rem;
   font-size: 0.85rem;

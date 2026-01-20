@@ -2,8 +2,8 @@ name: Daily decisions call
 
 on:
   schedule:
-    # 5PM EST (UTC-05:00) = 22:00 UTC
-    - cron: "0 22 * * *"
+    # 6AM EST (UTC-05:00) = 11:00 UTC, weekdays
+    - cron: "0 11 * * 1-5"
   workflow_dispatch:
 
 jobs:

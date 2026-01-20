@@ -19,10 +19,37 @@ const elements = {
   buyList: document.getElementById("buy-list"),
   decisionMessage: document.getElementById("decision-message"),
   portfolioList: document.getElementById("portfolio-list"),
+  loadingOverlay: document.getElementById("loading-overlay"),
 };
 
 const refreshButton = document.getElementById("refresh-decisions");
 const valuationButton = document.getElementById("refresh-valuation");
+
+const setPageLoading = (isLoading) => {
+  document.body.classList.toggle("is-loading", isLoading);
+  if (elements.loadingOverlay) {
+    elements.loadingOverlay.setAttribute("aria-busy", String(isLoading));
+  }
+};
+
+const setButtonLoading = (button, isLoading) => {
+  if (!button) {
+    return;
+  }
+
+  button.classList.toggle("button--loading", isLoading);
+  button.toggleAttribute("disabled", isLoading);
+  button.setAttribute("aria-busy", String(isLoading));
+};
+
+const triggerButtonPress = (button) => {
+  if (!button) {
+    return;
+  }
+
+  button.classList.add("button--pressed");
+  window.setTimeout(() => button.classList.remove("button--pressed"), 150);
+};
 
 
 const formatCurrency = (value) =>
@@ -159,8 +186,12 @@ const applyPortfolioUpdate = (update) => {
   portfolioState.lastUpdated = new Date();
 };
 
-const fetchDecisions = async () => {
+const fetchDecisions = async ({ showButtonLoading = false } = {}) => {
   updateDecisionStatus("Fetching...", "Reaching out to the ML API.");
+
+  if (showButtonLoading) {
+    setButtonLoading(refreshButton, true);
+  }
 
   try {
     const { decisions, meta } = await fetchBuySellDecisions();
@@ -181,6 +212,10 @@ const fetchDecisions = async () => {
   } catch (error) {
     updateDecisionStatus("Offline", "Unable to reach the backend API. Using cached values.");
     console.error("[decisions] Fetch failed", error);
+  } finally {
+    if (showButtonLoading) {
+      setButtonLoading(refreshButton, false);
+    }
   }
 };
 
@@ -205,9 +240,23 @@ const applyPortfolioValuation = (valuation) => {
   portfolioState.lastUpdated = new Date();
 };
 
-const fetchPortfolioValuation = async () => {
+const fetchPortfolioValuation = async ({ showOverlay = false, showButtonLoading = false } = {}) => {
+  if (showOverlay) {
+    setPageLoading(true);
+  }
+
+  if (showButtonLoading) {
+    setButtonLoading(valuationButton, true);
+  }
+
   if (typeof fetchPortfolioValue !== "function") {
     console.error("[valuation] Data provider not loaded. Ensure portfolio-value-data-provider.js is included before app.js.");
+    if (showButtonLoading) {
+      setButtonLoading(valuationButton, false);
+    }
+    if (showOverlay) {
+      setPageLoading(false);
+    }
     return;
   }
 
@@ -221,6 +270,14 @@ const fetchPortfolioValuation = async () => {
       time: new Date().toISOString(),
       message: error?.message ?? String(error),
     });
+  } finally {
+    if (showButtonLoading) {
+      setButtonLoading(valuationButton, false);
+    }
+
+    if (showOverlay) {
+      setPageLoading(false);
+    }
   }
 };
 
@@ -243,12 +300,18 @@ const shouldAutoFetch = () => {
   return afterClose && !alreadyFetchedToday;
 };
 
-refreshButton.addEventListener("click", fetchDecisions);
-valuationButton.addEventListener("click", fetchPortfolioValuation);
+refreshButton.addEventListener("click", () => {
+  triggerButtonPress(refreshButton);
+  fetchDecisions({ showButtonLoading: true });
+});
+valuationButton.addEventListener("click", () => {
+  triggerButtonPress(valuationButton);
+  fetchPortfolioValuation({ showButtonLoading: true });
+});
 
 renderPortfolio();
 renderPortfolioHoldings();
-fetchPortfolioValuation();
+fetchPortfolioValuation({ showOverlay: true });
 
 if (shouldAutoFetch()) {
   fetchDecisions();

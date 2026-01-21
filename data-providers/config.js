@@ -5,6 +5,10 @@ const DECISION_CONFIG = Object.freeze({
     LINEAR_REGRESSION: "linear-regression",
     RANDOM_FOREST_REGRESSION: "random-forest-regression",
   }),
+  forecastHorizons: Object.freeze({
+    EOY: "EOY",
+    THIRTY_DAYS: "30d",
+  }),
 });
 
 const getApiBase = () => {

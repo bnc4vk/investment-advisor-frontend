@@ -1,5 +1,6 @@
 const buildDecisionRequest = () => ({
   portfolio_id: window.DECISION_CONFIG?.portfolioId,
+  forecast_horizon: window.DECISION_CONFIG?.forecastHorizons.EOY,
   model_type: window.DECISION_CONFIG?.modelTypes.RANDOM_FOREST_REGRESSION,
 });
 

@@ -12,7 +12,7 @@ const unpackDecisionResponse = (data) => ({
       predictedReturn: item.predicted_return ?? null,
       predictedReturnPeriod: item.predicted_return_period ?? null,
       selloffDate: item.selloff_date ?? null,
-      selloffReturn: item.selloff_return ?? null,
+      selloffAmount: item.selloff_amount ?? null,
     })),
     buy: (data.buy ?? []).map((item) => ({
       ticker: item.ticker,

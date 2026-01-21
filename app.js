@@ -30,9 +30,9 @@ const elements = {
   loadingOverlay: document.getElementById("loading-overlay"),
 };
 
-const refreshButton = document.getElementById("refresh-decisions");
-const valuationButton = document.getElementById("refresh-valuation");
-const transactionButton = document.getElementById("refresh-transactions");
+const latestTradesButton = document.getElementById("latest-trades");
+const portfolioRefreshButton = document.getElementById("refresh-portfolio");
+const transactionHistoryButton = document.getElementById("transaction-history");
 
 const setPageLoading = (isLoading) => {
   document.body.classList.toggle("is-loading", isLoading);
@@ -244,7 +244,8 @@ const fetchDecisions = async ({ showButtonLoading = false } = {}) => {
   updateDecisionStatus("Fetching...", "Reaching out to the ML API.");
 
   if (showButtonLoading) {
-    setButtonLoading(refreshButton, true);
+    setButtonLoading(latestTradesButton
+    , true);
   }
 
   try {
@@ -268,7 +269,8 @@ const fetchDecisions = async ({ showButtonLoading = false } = {}) => {
     console.error("[decisions] Fetch failed", error);
   } finally {
     if (showButtonLoading) {
-      setButtonLoading(refreshButton, false);
+      setButtonLoading(latestTradesButton
+      , false);
     }
   }
 };
@@ -277,14 +279,14 @@ const fetchTransactionHistoryData = async ({ showButtonLoading = false } = {}) =
   updateTransactionStatus("Fetching...", "Reaching out for transaction history.");
 
   if (showButtonLoading) {
-    setButtonLoading(transactionButton, true);
+    setButtonLoading(transactionHistoryButton, true);
   }
 
   if (typeof window.fetchTransactionHistory !== "function") {
     console.error("[transactions] Data provider not loaded. Ensure transaction-history-data-provider.js is included before app.js.");
     updateTransactionStatus("Offline", "Transaction history provider unavailable.");
     if (showButtonLoading) {
-      setButtonLoading(transactionButton, false);
+      setButtonLoading(transactionHistoryButton, false);
     }
     return;
   }
@@ -299,7 +301,7 @@ const fetchTransactionHistoryData = async ({ showButtonLoading = false } = {}) =
     console.error("[transactions] Fetch failed", error);
   } finally {
     if (showButtonLoading) {
-      setButtonLoading(transactionButton, false);
+      setButtonLoading(transactionHistoryButton, false);
     }
   }
 };
@@ -339,13 +341,13 @@ const fetchPortfolioValuation = async ({ showOverlay = false, showButtonLoading 
   }
 
   if (showButtonLoading) {
-    setButtonLoading(valuationButton, true);
+    setButtonLoading(portfolioRefreshButton, true);
   }
 
   if (typeof fetchPortfolioValue !== "function") {
     console.error("[valuation] Data provider not loaded. Ensure portfolio-value-data-provider.js is included before app.js.");
     if (showButtonLoading) {
-      setButtonLoading(valuationButton, false);
+      setButtonLoading(portfolioRefreshButton, false);
     }
     if (showOverlay) {
       setPageLoading(false);
@@ -365,7 +367,7 @@ const fetchPortfolioValuation = async ({ showOverlay = false, showButtonLoading 
     });
   } finally {
     if (showButtonLoading) {
-      setButtonLoading(valuationButton, false);
+      setButtonLoading(portfolioRefreshButton, false);
     }
 
     if (showOverlay) {
@@ -393,16 +395,17 @@ const shouldAutoFetch = () => {
   return afterClose && !alreadyFetchedToday;
 };
 
-refreshButton.addEventListener("click", () => {
-  triggerButtonPress(refreshButton);
+latestTradesButton.addEventListener("click", () => {
+  triggerButtonPress(latestTradesButton
+  );
   fetchDecisions({ showButtonLoading: true });
 });
-valuationButton.addEventListener("click", () => {
-  triggerButtonPress(valuationButton);
+portfolioRefreshButton.addEventListener("click", () => {
+  triggerButtonPress(portfolioRefreshButton);
   fetchPortfolioValuation({ showButtonLoading: true });
 });
-transactionButton.addEventListener("click", () => {
-  triggerButtonPress(transactionButton);
+transactionHistoryButton.addEventListener("click", () => {
+  triggerButtonPress(transactionHistoryButton);
   fetchTransactionHistoryData({ showButtonLoading: true });
 });
 

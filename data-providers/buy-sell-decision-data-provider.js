@@ -1,5 +1,7 @@
 const buildDecisionRequest = () => ({
-  portfolio_id: window.DECISION_CONFIG?.portfolioId,
+  portfolio_id: typeof window.getActivePortfolioId === "function"
+    ? window.getActivePortfolioId()
+    : window.DECISION_CONFIG?.portfolioId ?? null,
   forecast_horizon: window.DECISION_CONFIG?.forecastHorizons.EOY,
   model_type: window.DECISION_CONFIG?.modelTypes.RANDOM_FOREST_REGRESSION,
 });

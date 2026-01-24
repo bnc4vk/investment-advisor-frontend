@@ -18,10 +18,12 @@
           Track the starting $100K portfolio performance, review portfolio investments, and follow along for the most recent trade decisions.
         </p>
         <div class="hero__actions">
-          <button class="button button--primary" id="latest-trades">
+          <!-- Hidden by default; kept for potential reintroduction/deprecation cleanup. -->
+          <button class="button button--primary button--hidden" id="latest-trades">
             Fetch Latest Trades
           </button>
-          <button class="button button--primary" id="refresh-portfolio">
+          <!-- Hidden by default; kept for potential reintroduction/deprecation cleanup. -->
+          <button class="button button--primary button--hidden" id="refresh-portfolio">
             Refresh Portfolio
           </button>
           <button class="button button--primary" id="transaction-history">
@@ -29,6 +31,20 @@
           </button>
         </div>
         <p class="hero__note" id="last-updated">Last updated: --</p>
+      </div>
+      <div class="hero__aside">
+        <div class="portfolio-tile" id="portfolio-tile">
+          <p class="card__label">Portfolio in view</p>
+          <button class="portfolio-tile__button" id="portfolio-selector-button" type="button" aria-haspopup="listbox" aria-expanded="false">
+            <span class="portfolio-tile__value" id="portfolio-selector-label">Select portfolio</span>
+            <span class="portfolio-tile__chevron" aria-hidden="true">
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                <path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </button>
+          <ul class="portfolio-tile__menu" id="portfolio-selector-menu" role="listbox" aria-label="Portfolio list"></ul>
+        </div>
       </div>
       <div class="hero__card">
         <p class="card__label">Portfolio balance</p>
